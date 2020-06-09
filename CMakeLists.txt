@@ -69,7 +69,7 @@ add_subdirectory(trantor)
 target_link_libraries(${PROJECT_NAME} PUBLIC trantor)
 
 if(NOT WIN32)
-  target_link_libraries(${PROJECT_NAME} PRIVATE dl)
+  target_link_libraries(${PROJECT_NAME} PRIVATE dl $<$<PLATFORM_ID:SunOS>:socket>)
 else(NOT WIN32)
   target_link_libraries(${PROJECT_NAME} PRIVATE shlwapi)
 endif(NOT WIN32)
