@@ -7,6 +7,7 @@ set(ctl_sources
     create_plugin.cc
     create_project.cc
     create_view.cc
+    create_swagger.cc
     help.cc
     main.cc
     press.cc
@@ -55,9 +56,6 @@ add_dependencies(drogon_ctl _drogon_ctl)
 if(WIN32)
   target_link_libraries(drogon_ctl PRIVATE ws2_32 Rpcrt4)
 endif(WIN32)
-if(APPLE)
-  target_link_libraries(drogon_ctl PRIVATE resolv)
-endif()
 message(STATUS "bin:" ${INSTALL_BIN_DIR})
 install(TARGETS drogon_ctl RUNTIME DESTINATION ${INSTALL_BIN_DIR})
 if(WIN32)
