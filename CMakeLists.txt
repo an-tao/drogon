@@ -17,7 +17,6 @@ option(BUILD_EXAMPLES "Build examples" ${BUILD_PROGRAMS})
 option(BUILD_ORM "Build orm" ON)
 option(COZ_PROFILING "Use coz for profiling" OFF)
 option(BUILD_DROGON_SHARED "Build drogon as a shared lib" OFF)
-option(BUILD_DOC "Build Doxygen documentation" OFF)
 
 include(CMakeDependentOption)
 CMAKE_DEPENDENT_OPTION(BUILD_POSTGRESQL "Build with postgresql support" ON "BUILD_ORM" OFF)
@@ -235,50 +234,11 @@ set(DROGON_SOURCES
     lib/src/WebSocketClientImpl.cc
     lib/src/WebSocketConnectionImpl.cc
     lib/src/WebsocketControllersRouter.cc)
-set(private_headers
-    lib/src/AOPAdvice.h
-    lib/src/CacheFile.h
-    lib/src/ConfigLoader.h
-    lib/src/filesystem.h
-    lib/src/FiltersFunction.h
-    lib/src/HttpAppFrameworkImpl.h
-    lib/src/HttpClientImpl.h
-    lib/src/HttpControllersRouter.h
-    lib/src/HttpFileImpl.h
-    lib/src/HttpFileUploadRequest.h
-    lib/src/HttpMessageBody.h
-    lib/src/HttpRequestImpl.h
-    lib/src/HttpRequestParser.h
-    lib/src/HttpResponseImpl.h
-    lib/src/HttpResponseParser.h
-    lib/src/HttpServer.h
-    lib/src/HttpSimpleControllersRouter.h
-    lib/src/HttpUtils.h
-    lib/src/impl_forwards.h
-    lib/src/ListenerManager.h
-    lib/src/PluginsManager.h
-    lib/src/SessionManager.h
-    lib/src/SpinLock.h
-    lib/src/StaticFileRouter.h
-    lib/src/TaskTimeoutFlag.h
-    lib/src/WebSocketClientImpl.h
-    lib/src/WebSocketConnectionImpl.h
-    lib/src/WebsocketControllersRouter.h)
 
 if (NOT WIN32)
-    set(DROGON_SOURCES
-        ${DROGON_SOURCES}
-        lib/src/SharedLibManager.cc)
-    set(private_headers
-        ${private_headers}
-        lib/src/SharedLibManager.h)
+    set(DROGON_SOURCES ${DROGON_SOURCES} lib/src/SharedLibManager.cc)
 else (NOT WIN32)
-    set(DROGON_SOURCES
-        ${DROGON_SOURCES}
-        third_party/mman-win32/mman.c)
-    set(private_headers
-        ${private_headers}
-        third_party/mman-win32/mman.h)
+    set(DROGON_SOURCES ${DROGON_SOURCES} third_party/mman-win32/mman.c)
 endif (NOT WIN32)
 
 if (BUILD_POSTGRESQL)
@@ -288,12 +248,8 @@ if (BUILD_POSTGRESQL)
         message(STATUS "libpq inc path:" ${PG_INCLUDE_DIRS})
         message(STATUS "libpq lib:" ${PG_LIBRARIES})
         target_link_libraries(${PROJECT_NAME} PRIVATE pg_lib)
-        set(DROGON_SOURCES
-            ${DROGON_SOURCES}
+        set(DROGON_SOURCES ${DROGON_SOURCES}
             orm_lib/src/postgresql_impl/PostgreSQLResultImpl.cc)
-        set(private_headers
-            ${private_headers}
-            orm_lib/src/postgresql_impl/PostgreSQLResultImpl.h)
         if (LIBPQ_BATCH_MODE)
             try_compile(libpq_supports_batch ${CMAKE_BINARY_DIR}/cmaketest
                 ${PROJECT_SOURCE_DIR}/cmake/tests/test_libpq_batch_mode.cc
@@ -303,17 +259,12 @@ if (BUILD_POSTGRESQL)
         if (libpq_supports_batch)
             message(STATUS "The libpq supports batch mode")
             option(LIBPQ_SUPPORTS_BATCH_MODE "libpq batch mode" ON)
-            set(DROGON_SOURCES
-                ${DROGON_SOURCES}
+            set(DROGON_SOURCES ${DROGON_SOURCES}
                 orm_lib/src/postgresql_impl/PgBatchConnection.cc)
         else (libpq_supports_batch)
             option(LIBPQ_SUPPORTS_BATCH_MODE "libpq batch mode" OFF)
-            set(DROGON_SOURCES
-                ${DROGON_SOURCES}
+            set(DROGON_SOURCES ${DROGON_SOURCES}
                 orm_lib/src/postgresql_impl/PgConnection.cc)
-            set(private_headers
-                ${private_headers}
-                orm_lib/src/postgresql_impl/PgConnection.h)
         endif (libpq_supports_batch)
     endif (pg_FOUND)
 endif (BUILD_POSTGRESQL)
@@ -324,14 +275,9 @@ if (BUILD_MYSQL)
     if (MySQL_FOUND)
         message(STATUS "Ok! We find the mariadb!")
         target_link_libraries(${PROJECT_NAME} PRIVATE MySQL_lib)
-        set(DROGON_SOURCES
-            ${DROGON_SOURCES}
+        set(DROGON_SOURCES ${DROGON_SOURCES}
             orm_lib/src/mysql_impl/MysqlConnection.cc
             orm_lib/src/mysql_impl/MysqlResultImpl.cc)
-        set(private_headers
-            ${private_headers}
-            orm_lib/src/mysql_impl/MysqlConnection.h
-            orm_lib/src/mysql_impl/MysqlResultImpl.h)
     endif (MySQL_FOUND)
 endif (BUILD_MYSQL)
 
@@ -340,14 +286,9 @@ if (BUILD_SQLITE)
     find_package(SQLite3)
     if (SQLite3_FOUND)
         target_link_libraries(${PROJECT_NAME} PRIVATE SQLite3_lib)
-        set(DROGON_SOURCES
-            ${DROGON_SOURCES}
+        set(DROGON_SOURCES ${DROGON_SOURCES}
             orm_lib/src/sqlite3_impl/Sqlite3Connection.cc
             orm_lib/src/sqlite3_impl/Sqlite3ResultImpl.cc)
-        set(private_headers
-            ${private_headers}
-            orm_lib/src/sqlite3_impl/Sqlite3Connection.h
-            orm_lib/src/sqlite3_impl/Sqlite3ResultImpl.h)
     endif (SQLite3_FOUND)
 endif (BUILD_SQLITE)
 
@@ -359,17 +300,11 @@ if (BUILD_REDIS)
         set(DROGON_SOURCES
             ${DROGON_SOURCES}
             nosql_lib/redis/src/RedisClientImpl.cc
-            nosql_lib/redis/src/RedisClientLockFree.cc
-            nosql_lib/redis/src/RedisClientManager.cc
             nosql_lib/redis/src/RedisConnection.cc
             nosql_lib/redis/src/RedisResult.cc
+            nosql_lib/redis/src/RedisClientLockFree.cc
+            nosql_lib/redis/src/RedisClientManager.cc
             nosql_lib/redis/src/RedisTransactionImpl.cc)
-        set(private_headers
-            ${private_headers}
-            nosql_lib/redis/src/RedisClientImpl.h
-            nosql_lib/redis/src/RedisClientLockFree.h
-            nosql_lib/redis/src/RedisConnection.h
-            nosql_lib/redis/src/RedisTransactionImpl.h)
 
     endif (Hiredis_FOUND)
 endif (BUILD_REDIS)
@@ -380,9 +315,6 @@ if (NOT Hiredis_FOUND)
         lib/src/RedisClientSkipped.cc
         lib/src/RedisResultSkipped.cc
         lib/src/RedisClientManagerSkipped.cc)
-    set(private_headers
-        ${private_headers}
-        lib/src/RedisClientManager.h)
 endif (NOT Hiredis_FOUND)
 
 if (BUILD_TESTING)
@@ -396,14 +328,8 @@ find_package(OpenSSL)
 if (OpenSSL_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 else (OpenSSL_FOUND)
-    set(DROGON_SOURCES
-        ${DROGON_SOURCES}
-        lib/src/ssl_funcs/Md5.cc
+    set(DROGON_SOURCES ${DROGON_SOURCES} lib/src/ssl_funcs/Md5.cc
         lib/src/ssl_funcs/Sha1.cc)
-    set(private_headers
-        ${private_headers}
-        lib/src/ssl_funcs/Md5.h
-        lib/src/ssl_funcs/Sha1.h)
 endif (OpenSSL_FOUND)
 
 execute_process(COMMAND "git" rev-parse HEAD
@@ -452,56 +378,15 @@ set(DROGON_SOURCES
     orm_lib/src/SqlBinder.cc
     orm_lib/src/TransactionImpl.cc
     orm_lib/src/RestfulController.cc)
-set(DROGON_HEADERS
-    lib/inc/drogon/Attribute.h
-    lib/inc/drogon/CacheMap.h
-    lib/inc/drogon/Cookie.h
-    lib/inc/drogon/DrClassMap.h
-    lib/inc/drogon/DrObject.h
-    lib/inc/drogon/DrTemplate.h
-    lib/inc/drogon/DrTemplateBase.h
-    lib/inc/drogon/HttpAppFramework.h
-    lib/inc/drogon/HttpBinder.h
-    lib/inc/drogon/HttpClient.h
-    lib/inc/drogon/HttpController.h
-    lib/inc/drogon/HttpFilter.h
-    lib/inc/drogon/HttpRequest.h
-    lib/inc/drogon/HttpResponse.h
-    lib/inc/drogon/HttpSimpleController.h
-    lib/inc/drogon/HttpTypes.h
-    lib/inc/drogon/HttpViewData.h
-    lib/inc/drogon/IntranetIpFilter.h
-    lib/inc/drogon/IOThreadStorage.h
-    lib/inc/drogon/LocalHostFilter.h
-    lib/inc/drogon/MultiPart.h
-    lib/inc/drogon/NotFound.h
-    lib/inc/drogon/Session.h
-    lib/inc/drogon/UploadFile.h
-    lib/inc/drogon/WebSocketClient.h
-    lib/inc/drogon/WebSocketConnection.h
-    lib/inc/drogon/WebSocketController.h
-    lib/inc/drogon/drogon.h
-    lib/inc/drogon/version.h
-    lib/inc/drogon/drogon_callbacks.h
-    lib/inc/drogon/PubSubService.h
-    lib/inc/drogon/drogon_test.h
-    ${CMAKE_CURRENT_BINARY_DIR}/exports/drogon/exports.h)
-set(private_headers
-    ${private_headers}
-    lib/src/DbClientManager.h
-    orm_lib/src/DbClientImpl.h
-    orm_lib/src/DbConnection.h
-    orm_lib/src/ResultImpl.h
-    orm_lib/src/TransactionImpl.h)
 if (pg_FOUND OR MySQL_FOUND OR SQLite3_FOUND)
     set(DROGON_SOURCES
         ${DROGON_SOURCES}
         orm_lib/src/DbClientManager.cc)
 else (pg_FOUND OR MySQL_FOUND OR SQLite3_FOUND)
-    set(DROGON_SOURCES
-        ${DROGON_SOURCES}
-        lib/src/DbClientManagerSkipped.cc)
+    set(DROGON_SOURCES ${DROGON_SOURCES} lib/src/DbClientManagerSkipped.cc)
 endif (pg_FOUND OR MySQL_FOUND OR SQLite3_FOUND)
+
+target_sources(${PROJECT_NAME} PRIVATE ${DROGON_SOURCES})
 
 set_target_properties(${PROJECT_NAME}
     PROPERTIES CXX_STANDARD ${DROGON_CXX_STANDARD})
@@ -582,6 +467,40 @@ install(TARGETS ${PROJECT_NAME}
     ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib
     LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT lib)
 
+set(DROGON_HEADERS
+    lib/inc/drogon/Attribute.h
+    lib/inc/drogon/CacheMap.h
+    lib/inc/drogon/Cookie.h
+    lib/inc/drogon/DrClassMap.h
+    lib/inc/drogon/DrObject.h
+    lib/inc/drogon/DrTemplate.h
+    lib/inc/drogon/DrTemplateBase.h
+    lib/inc/drogon/HttpAppFramework.h
+    lib/inc/drogon/HttpBinder.h
+    lib/inc/drogon/HttpClient.h
+    lib/inc/drogon/HttpController.h
+    lib/inc/drogon/HttpFilter.h
+    lib/inc/drogon/HttpRequest.h
+    lib/inc/drogon/HttpResponse.h
+    lib/inc/drogon/HttpSimpleController.h
+    lib/inc/drogon/HttpTypes.h
+    lib/inc/drogon/HttpViewData.h
+    lib/inc/drogon/IntranetIpFilter.h
+    lib/inc/drogon/IOThreadStorage.h
+    lib/inc/drogon/LocalHostFilter.h
+    lib/inc/drogon/MultiPart.h
+    lib/inc/drogon/NotFound.h
+    lib/inc/drogon/Session.h
+    lib/inc/drogon/UploadFile.h
+    lib/inc/drogon/WebSocketClient.h
+    lib/inc/drogon/WebSocketConnection.h
+    lib/inc/drogon/WebSocketController.h
+    lib/inc/drogon/drogon.h
+    lib/inc/drogon/version.h
+    lib/inc/drogon/drogon_callbacks.h
+    lib/inc/drogon/PubSubService.h
+    lib/inc/drogon/drogon_test.h
+    ${CMAKE_CURRENT_BINARY_DIR}/exports/drogon/exports.h)
 install(FILES ${DROGON_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon)
 
 set(ORM_HEADERS
@@ -602,8 +521,7 @@ set(ORM_HEADERS
     orm_lib/inc/drogon/orm/RestfulController.h)
 install(FILES ${ORM_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/orm)
 
-set(NOSQL_HEADERS
-    nosql_lib/redis/inc/drogon/nosql/RedisClient.h
+set(NOSQL_HEADERS nosql_lib/redis/inc/drogon/nosql/RedisClient.h
     nosql_lib/redis/inc/drogon/nosql/RedisResult.h
     nosql_lib/redis/inc/drogon/nosql/RedisException.h)
 install(FILES ${NOSQL_HEADERS} DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/nosql)
@@ -620,21 +538,11 @@ set(DROGON_UTIL_HEADERS
 install(FILES ${DROGON_UTIL_HEADERS}
     DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/utils)
 
-set(DROGON_PLUGIN_HEADERS
-    lib/inc/drogon/plugins/Plugin.h
+set(DROGON_PLUGIN_HEADERS lib/inc/drogon/plugins/Plugin.h
     lib/inc/drogon/plugins/SecureSSLRedirector.h
     lib/inc/drogon/plugins/AccessLogger.h)
 install(FILES ${DROGON_PLUGIN_HEADERS}
     DESTINATION ${INSTALL_INCLUDE_DIR}/drogon/plugins)
-
-target_sources(${PROJECT_NAME} PRIVATE
-               ${DROGON_SOURCES}
-               ${private_headers}
-               ${DROGON_HEADERS}
-               ${ORM_HEADERS}
-               ${DROGON_UTIL_HEADERS}
-               ${DROGON_PLUGIN_HEADERS}
-               ${NOSQL_HEADERS})
 
 source_group("Public API"
     FILES
@@ -643,9 +551,6 @@ source_group("Public API"
     ${DROGON_UTIL_HEADERS}
     ${DROGON_PLUGIN_HEADERS}
     ${NOSQL_HEADERS})
-source_group("Private Headers"
-             FILES
-             ${private_headers})
 
 # Export the package for use from the build-tree (this registers the build-tree
 # with a global cmake-registry) export(PACKAGE Drogon)
@@ -686,43 +591,4 @@ install(EXPORT DrogonTargets
     DESTINATION "${INSTALL_DROGON_CMAKE_DIR}"
     NAMESPACE Drogon::
     COMPONENT dev)
-
-# Doxygen documentation
-find_package(Doxygen OPTIONAL_COMPONENTS dot dia)
-if(DOXYGEN_FOUND)
-  set(DOXYGEN_PROJECT_BRIEF "C++14/17-based HTTP application framework")
-  set(DOXYGEN_OUTPUT_DIRECTORY docs/${PROJECT_NAME})
-  set(DOXYGEN_GENERATE_LATEX NO)
-  set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-  set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
-  set(DOXYGEN_STRIP_FROM_INC_PATH ${PROJECT_SOURCE_DIR}/lib/inc
-                                  ${PROJECT_SOURCE_DIR}/orm_lib/inc
-                                  ${CMAKE_CURRENT_BINARY_DIR}/exports)
-  set(DOXYGEN_EXAMPLE_PATTERNS *)
-  if(WIN32)
-    set(DOXYGEN_PREDEFINED _WIN32)
-  endif(WIN32)
-  doxygen_add_docs(doc_${PROJECT_NAME}
-                   README.md
-                   README.zh-CN.md
-                   README.zh-TW.md
-                   ChangeLog.md
-                   CONTRIBUTING.md
-                   ${DROGON_HEADERS}
-                   ${DROGON_UTIL_HEADERS}
-                   ${DROGON_PLUGIN_HEADERS}
-                   ${ORM_HEADERS}
-                   COMMENT "Generate documentation")
-  if(NOT TARGET doc)
-    add_custom_target(doc)
-  endif()
-  add_dependencies(doc doc_${PROJECT_NAME})
-  if (BUILD_DOC)
-    add_dependencies(${PROJECT_NAME} doc_${PROJECT_NAME})
-    # Don't install twice, so limit to Debug (assume developer)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/${PROJECT_NAME}
-            TYPE DOC
-            CONFIGURATIONS Debug)
-  endif(BUILD_DOC)
-endif(DOXYGEN_FOUND)
 
